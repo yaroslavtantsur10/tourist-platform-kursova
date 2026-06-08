@@ -1,0 +1,257 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.User.DashboardModel
+
+@{
+  ViewData["Title"] = "Мій кабінет";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Мій кабінет</h1>
+  <p class="text-muted mb-0">
+    Персональна сторінка користувача з короткою статистикою, улюбленими турами,
+    бронюваннями, оцінками та рекомендаціями.
+  </p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Улюблені тури</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.FavoriteToursCount</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Залишені оцінки</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.ReviewsCount</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Оцінені тури</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.RatedToursCount</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Бронювання</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.BookingsCount</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Рекомендовані тури</h2>
+        <a asp-page="/Tours/Index" class="btn btn-sm btn-outline-primary">До каталогу</a>
+      </div>
+
+      <div class="card-body">
+        @if (!Model.Dashboard.HasRatingsForPersonalization) {
+          <div class="alert alert-info">
+            Для точнішого персоналізованого підбору оцініть кілька турів. Поки що система показує
+            популярні або нещодавно додані активні пропозиції.
+          </div>
+        }
+
+        @if (!Model.Dashboard.RecommendedTours.Any()) {
+          <div class="text-muted">
+            Рекомендовані тури поки відсутні.
+          </div>
+        } else {
+          <div class="row g-3">
+            @foreach (var tour in Model.Dashboard.RecommendedTours) {
+              var averageRating = tour.Reviews.Any()
+              ? tour.Reviews.Average(r => r.Rating)
+              : 0;
+
+              <div class="col-md-4">
+                <div class="card h-100 border-0 bg-light">
+                  @if (!string.IsNullOrWhiteSpace(tour.PhotoPath)) {
+                    <img src="@tour.PhotoPath"
+                         class="card-img-top"
+                         alt="@tour.Title"
+                         style="height: 130px; object-fit: cover;" />
+                  }
+
+                  <div class="card-body d-flex flex-column">
+                    <h3 class="h6">@tour.Title</h3>
+
+                    <div class="small text-muted mb-2">
+                      @(tour.Country?.Name ?? "Країна не вказана") ·
+                      @(tour.Hotel?.Name ?? "Готель не вказаний")
+                    </div>
+
+                    <div class="small mb-2">
+                      <strong>@tour.Price.ToString("N0") грн</strong>
+                    </div>
+
+                    <div class="small text-muted mb-3">
+                      Середня оцінка:
+                      @(averageRating > 0 ? averageRating.ToString("F1") : "ще немає")
+                    </div>
+
+                    <a asp-page="/Tours/Details" asp-route-id="@tour.Id"
+                       class="btn btn-sm btn-outline-primary mt-auto">
+                      Детальніше
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Останні бронювання</h2>
+        <a asp-page="/Bookings/Index" class="btn btn-sm btn-outline-primary">Усі бронювання</a>
+      </div>
+
+      <div class="card-body p-0">
+        @if (!Model.Dashboard.RecentBookings.Any()) {
+          <div class="p-4 text-muted">
+            Ви ще не створювали бронювань.
+          </div>
+        } else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Тур</th>
+                  <th>Країна</th>
+                  <th>Дата бронювання</th>
+                  <th>Статус</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (var booking in Model.Dashboard.RecentBookings) {
+                  <tr>
+                    <td>
+                      <div class="fw-semibold">
+                        @(booking.Tour?.Title ?? "Тур не знайдено")
+                      </div>
+                      <div class="small text-muted">
+                        @(booking.Tour?.Hotel?.Name ?? "Готель не вказаний")
+                      </div>
+                    </td>
+
+                    <td>@(booking.Tour?.Country?.Name ?? "Не вказано")</td>
+
+                    <td>@booking.BookingDate.ToString("dd.MM.yyyy HH:mm")</td>
+
+                    <td>
+                      @if (booking.Status == BookingStatuses.Pending) {
+                        <span class="badge bg-warning text-dark">@booking.Status</span>
+                      } else if (booking.Status == BookingStatuses.Confirmed) {
+                        <span class="badge bg-success">@booking.Status</span>
+                      } else {
+                        <span class="badge bg-secondary">@booking.Status</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Улюблені тури</h2>
+        <a asp-page="/Favorites/Index" class="btn btn-sm btn-outline-primary">Усі</a>
+      </div>
+
+      <div class="card-body">
+        @if (!Model.Dashboard.FavoriteTours.Any()) {
+          <div class="text-muted">
+            Ви ще не додали тури до улюблених.
+          </div>
+        } else {
+          <div class="list-group list-group-flush">
+            @foreach (var favorite in Model.Dashboard.FavoriteTours) {
+              var tour = favorite.Tour;
+
+              if (tour == null) {
+                continue;
+              }
+
+              <a asp-page="/Tours/Details" asp-route-id="@tour.Id"
+                 class="list-group-item list-group-item-action px-0">
+                <div class="fw-semibold">@tour.Title</div>
+                <div class="small text-muted">
+                  @(tour.Country?.Name ?? "Країна не вказана") ·
+                  @(tour.Hotel?.Name ?? "Готель не вказаний")
+                </div>
+                <div class="small">
+                  @tour.Price.ToString("N0") грн
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Останні оцінки</h2>
+      </div>
+
+      <div class="card-body">
+        @if (!Model.Dashboard.RecentReviews.Any()) {
+          <div class="text-muted">
+            Ви ще не оцінювали тури.
+          </div>
+        } else {
+          <div class="list-group list-group-flush">
+            @foreach (var review in Model.Dashboard.RecentReviews) {
+              <a asp-page="/Tours/Details" asp-route-id="@review.TourId"
+                 class="list-group-item list-group-item-action px-0">
+                <div class="d-flex justify-content-between">
+                  <span class="fw-semibold">
+                    @(review.Tour?.Title ?? "Тур не знайдено")
+                  </span>
+                  <span class="badge bg-warning text-dark">
+                    @review.Rating ★
+                  </span>
+                </div>
+
+                <div class="small text-muted">
+                  @review.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(review.Comment)) {
+                  <div class="small mt-1">
+                    @(review.Comment.Length > 90
+                                  ? review.Comment.Substring(0, 90) + "..."
+                                  : review.Comment)
+            </div>
+                        }
+              </a>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

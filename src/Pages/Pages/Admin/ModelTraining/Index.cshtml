@@ -1,0 +1,160 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.Admin.ModelTraining.IndexModel
+
+@{
+  ViewData["Title"] = "Навчання ML.NET-моделі";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Навчання ML.NET-моделі</h1>
+  <p class="text-muted mb-0">
+    Рекомендаційна модель навчається на основі оцінок користувачів, збережених у таблиці відгуків.
+    Основними навчальними полями є користувач, тур і числова оцінка.
+  </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage)) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    @Model.SuccessMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    @Model.ErrorMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Оцінок у базі</div>
+        <div class="display-6 fw-semibold">@Model.ReviewsCount</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Користувачів з оцінками</div>
+        <div class="display-6 fw-semibold">@Model.UsersWithRatingsCount</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Оцінених турів</div>
+        <div class="display-6 fw-semibold">@Model.RatedToursCount</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Файл моделі</div>
+        <div class="h4 fw-semibold mb-0">
+          @if (Model.ModelExists) {
+            <span class="text-success">Створено</span>
+          } else {
+            <span class="text-muted">Відсутній</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <h2 class="h5 mb-0">Запуск навчання</h2>
+  </div>
+
+  <div class="card-body">
+    <p>
+      Для навчання моделі використовуються лише записи з коректними оцінками від 1 до 5.
+      Якщо даних недостатньо, система не створюватиме файл моделі та збереже відповідний запис у журналі.
+    </p>
+
+    <form method="post" asp-page-handler="Train">
+      <button type="submit"
+              class="btn btn-success"
+              onclick="return confirm('Запустити навчання рекомендаційної моделі?');">
+        Запустити навчання моделі
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h2 class="h5 mb-0">Журнал навчання</h2>
+    <span class="badge bg-primary">Останні записи: @Model.TrainingLogs.Count</span>
+  </div>
+
+  <div class="card-body p-0">
+    @if (!Model.TrainingLogs.Any()) {
+      <div class="p-4 text-muted">
+        Навчання моделі ще не запускалося.
+      </div>
+    } else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Дата</th>
+              <th>Адміністратор</th>
+              <th>Записи</th>
+              <th>RMSE</th>
+              <th>MAE</th>
+              <th>Статус</th>
+              <th>Повідомлення</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var log in Model.TrainingLogs) {
+              <tr>
+                <td>@log.TrainingDate.ToString("dd.MM.yyyy HH:mm")</td>
+
+                <td>
+                  <div>@(log.User?.FullName ?? "Адміністратор")</div>
+                  <div class="small text-muted">@log.User?.Email</div>
+                </td>
+
+                <td>@log.RecordsCount</td>
+
+                <td>
+                  @(log.Rmse.HasValue? log.Rmse.Value.ToString("F6") : "—")
+                </td>
+
+                <td>
+                  @(log.Mae.HasValue? log.Mae.Value.ToString("F6") : "—")
+                </td>
+
+                <td>
+                  @if (log.Status == TrainingStatuses.Completed) {
+                    <span class="badge bg-success">@log.Status</span>
+                  } else if (log.Status == TrainingStatuses.NotEnoughData) {
+                    <span class="badge bg-warning text-dark">@log.Status</span>
+                  } else {
+                    <span class="badge bg-danger">@log.Status</span>
+                  }
+                </td>
+
+                <td style="max-width: 360px;">
+                  @log.Message
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

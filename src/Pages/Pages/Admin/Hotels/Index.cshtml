@@ -1,0 +1,105 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.Admin.Hotels.IndexModel
+
+@{
+  ViewData["Title"] = "Керування готелями";
+}
+
+<div class="mb-4 d-flex justify-content-between align-items-start">
+  <div>
+    <h1 class="mb-1">Керування готелями</h1>
+    <p class="text-muted mb-0">
+      Довідник готелів використовується під час формування туристичних путівок
+      і пов’язаний із довідником країн.
+    </p>
+  </div>
+
+  <a asp-page="Create" class="btn btn-primary">
+    Додати готель
+  </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    @TempData["SuccessMessage"]
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+@if (TempData["ErrorMessage"] != null) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    @TempData["ErrorMessage"]
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h2 class="h5 mb-0">Список готелів</h2>
+    <span class="badge bg-primary">Кількість: @Model.Hotels.Count</span>
+  </div>
+
+  <div class="card-body p-0">
+    @if (!Model.Hotels.Any()) {
+      <div class="p-4 text-muted">
+        Готелі ще не додані.
+      </div>
+    } else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Назва</th>
+              <th>Країна</th>
+              <th>Рейтинг</th>
+              <th>Опис</th>
+              <th>Тури</th>
+              <th class="text-end">Дії</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var hotel in Model.Hotels) {
+              <tr>
+                <td class="fw-semibold">@hotel.Name</td>
+
+                <td>
+                  @(hotel.Country?.Name ?? "Не вказано")
+                </td>
+
+                <td>
+                  <span class="badge bg-warning text-dark">
+                    @hotel.Rating ★
+                  </span>
+                </td>
+
+                <td>
+                  @if (string.IsNullOrWhiteSpace(hotel.Description)) {
+                    <span class="text-muted">Опис не вказано</span>
+                  } else {
+                    @(hotel.Description.Length > 120
+                                  ? hotel.Description.Substring(0, 120) + "..."
+                                  : hotel.Description)
+                            }
+                </td>
+
+                <td>
+                  <span class="badge bg-secondary">@hotel.Tours.Count</span>
+                </td>
+
+                <td class="text-end">
+                  <a asp-page="Edit" asp-route-id="@hotel.Id" class="btn btn-sm btn-outline-primary">
+                    Редагувати
+                  </a>
+
+                  <a asp-page="Delete" asp-route-id="@hotel.Id" class="btn btn-sm btn-outline-danger">
+                    Видалити
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

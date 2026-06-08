@@ -1,0 +1,240 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.Admin.Statistics.IndexModel
+
+@{
+  ViewData["Title"] = "Статистика";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Статистика системи</h1>
+  <p class="text-muted mb-0">
+    Сторінка відображає статистичні показники бронювання, популярності туристичних напрямів
+    і якості оцінювання турів користувачами.
+  </p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Усього бронювань</div>
+        <div class="display-6 fw-semibold">@Model.Statistics.TotalBookings</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Усього оцінок</div>
+        <div class="display-6 fw-semibold">@Model.Statistics.TotalReviews</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Оцінені тури</div>
+        <div class="display-6 fw-semibold">@Model.Statistics.TotalRatedTours</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Середня оцінка</div>
+        <div class="display-6 fw-semibold">
+          @(Model.Statistics.AverageSystemRating > 0
+                    ? Model.Statistics.AverageSystemRating.ToString("F2")
+                    : "—")
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Популярність напрямів за бронюваннями</h2>
+      </div>
+      <div class="card-body">
+        @if (!Model.Statistics.CountryPopularity.Any()) {
+          <div class="alert alert-info mb-0">
+            Дані для діаграми поки відсутні. Створіть хоча б одне бронювання.
+          </div>
+        } else {
+          <canvas id="countryPopularityChart" height="220"></canvas>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Топ турів за середньою оцінкою</h2>
+      </div>
+      <div class="card-body">
+        @if (!Model.Statistics.TourRatings.Any()) {
+          <div class="alert alert-info mb-0">
+            Дані для діаграми поки відсутні. Користувачі ще не залишали оцінок.
+          </div>
+        } else {
+          <canvas id="tourRatingsChart" height="220"></canvas>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Кількість відгуків за турами</h2>
+      </div>
+      <div class="card-body">
+        @if (!Model.Statistics.TourReviewsCounts.Any()) {
+          <div class="alert alert-info mb-0">
+            Дані для діаграми поки відсутні.
+          </div>
+        } else {
+          <canvas id="tourReviewsChart" height="220"></canvas>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Аналітичне пояснення</h2>
+      </div>
+      <div class="card-body">
+        <p>
+          Діаграма популярності напрямів дозволяє оцінити, які країни найчастіше обираються
+          користувачами під час бронювання туристичних путівок.
+        </p>
+        <p>
+          Діаграми оцінок і кількості відгуків характеризують якість туристичних пропозицій
+          та обсяг даних, які можуть використовуватися для навчання рекомендаційної моделі.
+        </p>
+        <p class="mb-0">
+          Якщо кількість оцінок є недостатньою, рекомендаційна підсистема не матиме достатнього
+          навчального набору для побудови персоналізованих прогнозів.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const countryPopularityLabels = @Html.Raw(Model.CountryPopularityLabelsJson);
+    const countryPopularityValues = @Html.Raw(Model.CountryPopularityValuesJson);
+
+    const tourRatingLabels = @Html.Raw(Model.TourRatingLabelsJson);
+    const tourRatingValues = @Html.Raw(Model.TourRatingValuesJson);
+
+    const tourReviewsLabels = @Html.Raw(Model.TourReviewsLabelsJson);
+    const tourReviewsValues = @Html.Raw(Model.TourReviewsValuesJson);
+
+    const countryChartElement = document.getElementById('countryPopularityChart');
+
+    if (countryChartElement) {
+        new Chart(countryChartElement, {
+            type: 'bar',
+            data: {
+                labels: countryPopularityLabels,
+                datasets: [{
+                    label: 'Кількість бронювань',
+                    data: countryPopularityValues
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const ratingChartElement = document.getElementById('tourRatingsChart');
+
+    if (ratingChartElement) {
+        new Chart(ratingChartElement, {
+            type: 'bar',
+            data: {
+                labels: tourRatingLabels,
+                datasets: [{
+                    label: 'Середня оцінка',
+                    data: tourRatingValues
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5
+                    }
+                }
+            }
+        });
+    }
+
+    const reviewsChartElement = document.getElementById('tourReviewsChart');
+
+    if (reviewsChartElement) {
+        new Chart(reviewsChartElement, {
+            type: 'bar',
+            data: {
+                labels: tourReviewsLabels,
+                datasets: [{
+                    label: 'Кількість відгуків',
+                    data: tourReviewsValues
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+  </script>
+}
