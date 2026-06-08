@@ -1,0 +1,95 @@
+﻿@page
+@model IndexModel
+
+@{
+  ViewData["Title"] = "Головна";
+}
+
+<section class="py-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <h1 class="display-5 fw-semibold mb-3">
+        Платформа підбору туристичних путівок
+      </h1>
+
+      <p class="lead text-muted mb-4">
+        Система допомагає переглядати туристичні пропозиції, фільтрувати тури,
+        додавати їх до улюблених, створювати бронювання та отримувати персональні рекомендації.
+      </p>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a asp-page="/Tours/Index" class="btn btn-primary btn-lg">
+          Перейти до каталогу
+        </a>
+
+        @if (User.Identity?.IsAuthenticated == true) {
+          <a asp-page="/User/Dashboard" class="btn btn-outline-primary btn-lg">
+            Мій кабінет
+          </a>
+        } else {
+          <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg">
+            Зареєструватися
+          </a>
+        }
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="h4 mb-3">Можливості системи</h2>
+
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2">✓ Каталог активних туристичних путівок</li>
+            <li class="mb-2">✓ Пошук і фільтрація за основними параметрами</li>
+            <li class="mb-2">✓ Улюблені тури та бронювання</li>
+            <li class="mb-2">✓ Оцінювання турів і текстові коментарі</li>
+            <li class="mb-2">✓ Персональний кабінет користувача</li>
+            <li class="mb-2">✓ Адміністративний дашборд і статистика</li>
+            <li>✓ ML.NET-рекомендації на основі оцінок</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-4">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5">Пошук турів</h2>
+          <p class="text-muted mb-0">
+            Користувач може швидко знаходити путівки за країною, готелем,
+            ціною, датами, рейтингом і наявністю місць.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5">Персональна взаємодія</h2>
+          <p class="text-muted mb-0">
+            Платформа підтримує улюблені тури, бронювання, оцінки та коментарі,
+            які формують історію активності користувача.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5">Рекомендаційна модель</h2>
+          <p class="text-muted mb-0">
+            Оцінки користувачів використовуються для навчання ML.NET-моделі
+            матричної факторизації та формування рекомендацій.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

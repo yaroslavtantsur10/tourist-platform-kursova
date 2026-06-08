@@ -1,0 +1,170 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.Tours.IndexModel
+
+@{
+  ViewData["Title"] = "Каталог турів";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Каталог туристичних путівок</h1>
+  <p class="text-muted mb-0">
+    Оберіть туристичну пропозицію, скориставшись пошуком, фільтрами за напрямом, готелем,
+    ціною, датами та наявністю місць.
+  </p>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <h2 class="h5 mb-0">Пошук і фільтрація</h2>
+  </div>
+
+  <div class="card-body">
+    <form method="get">
+      <div class="row g-3">
+        <div class="col-md-12">
+          <label asp-for="Filter.SearchTerm" class="form-label"></label>
+          <input asp-for="Filter.SearchTerm" class="form-control"
+                 placeholder="Введіть назву туру, країну, готель або ключове слово з опису" />
+        </div>
+
+        <div class="col-md-6">
+          <label asp-for="Filter.CountryId" class="form-label"></label>
+          <select asp-for="Filter.CountryId" asp-items="Model.CountriesSelectList" class="form-select">
+            <option value="">Усі країни</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label asp-for="Filter.HotelId" class="form-label"></label>
+          <select asp-for="Filter.HotelId" asp-items="Model.HotelsSelectList" class="form-select">
+            <option value="">Усі готелі</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label asp-for="Filter.MinPrice" class="form-label"></label>
+          <input asp-for="Filter.MinPrice" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+          <label asp-for="Filter.MaxPrice" class="form-label"></label>
+          <input asp-for="Filter.MaxPrice" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+          <label asp-for="Filter.MinHotelRating" class="form-label"></label>
+          <select asp-for="Filter.MinHotelRating" class="form-select">
+            <option value="">Будь-який</option>
+            <option value="1">від 1★</option>
+            <option value="2">від 2★</option>
+            <option value="3">від 3★</option>
+            <option value="4">від 4★</option>
+            <option value="5">5★</option>
+          </select>
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+          <div class="form-check mb-2">
+            <input asp-for="Filter.OnlyAvailable" class="form-check-input" />
+            <label asp-for="Filter.OnlyAvailable" class="form-check-label"></label>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <label asp-for="Filter.StartDateFrom" class="form-label"></label>
+          <input asp-for="Filter.StartDateFrom" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+          <label asp-for="Filter.EndDateTo" class="form-label"></label>
+          <input asp-for="Filter.EndDateTo" class="form-control" />
+        </div>
+
+        <div class="col-md-6 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-primary">
+            Застосувати фільтри
+          </button>
+
+          <a asp-page="/Tours/Index" class="btn btn-outline-secondary">
+            Скинути
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">Доступні тури</h2>
+  <span class="badge bg-primary">Знайдено: @Model.Tours.Count</span>
+</div>
+
+@if (!Model.Tours.Any()) {
+  <div class="alert alert-info">
+    За заданими умовами туристичних путівок не знайдено. Спробуйте змінити параметри пошуку або фільтрації.
+  </div>
+} else {
+  <div class="row g-4">
+    @foreach (var tour in Model.Tours) {
+      var averageRating = tour.Reviews.Any()
+      ? tour.Reviews.Average(r => r.Rating)
+      : 0;
+
+      <div class="col-md-6 col-xl-4">
+        <div class="card h-100 border-0 shadow-sm">
+          @if (!string.IsNullOrWhiteSpace(tour.PhotoPath)) {
+            <img src="@tour.PhotoPath"
+                 class="card-img-top"
+                 alt="@tour.Title"
+                 style="height: 210px; object-fit: cover;" />
+          } else {
+            <div class="bg-light d-flex align-items-center justify-content-center"
+                 style="height: 210px;">
+              <span class="text-muted">Фото туру відсутнє</span>
+            </div>
+          }
+
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between gap-2 mb-2">
+            <h3 class="h5 mb-0">@tour.Title</h3>
+            <span class="badge bg-success align-self-start">
+              @tour.Price.ToString("N0") грн
+            </span>
+          </div>
+
+          <div class="text-muted small mb-2">
+            @(tour.Country?.Name ?? "Країна не вказана") ·
+            @(tour.Hotel?.Name ?? "Готель не вказаний") ·
+            @(tour.Hotel?.Rating.ToString() ?? "-")★
+          </div>
+
+          <p class="card-text">
+            @(tour.Description.Length > 140
+                      ? tour.Description.Substring(0, 140) + "..."
+                      : tour.Description)
+        </p>
+
+            <div class="small text-muted mb-3">
+              <div>
+                Період:
+                @tour.StartDate.ToString("dd.MM.yyyy") —
+                @tour.EndDate.ToString("dd.MM.yyyy")
+              </div>
+              <div>Доступні місця: @tour.AvailablePlaces</div>
+              <div>
+                Середня оцінка:
+                @(averageRating > 0 ? averageRating.ToString("F1") : "ще немає")
+              </div>
+            </div>
+
+            <div class="mt-auto">
+              <a asp-page="/Tours/Details" asp-route-id="@tour.Id" class="btn btn-outline-primary w-100">
+                Детальніше
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

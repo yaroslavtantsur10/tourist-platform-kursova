@@ -1,0 +1,55 @@
+﻿@page "{id:int}"
+@model TourRecommenderPlatform.Pages.Admin.Countries.DeleteModel
+
+@{
+  ViewData["Title"] = "Видалення країни";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Видалення країни</h1>
+  <p class="text-muted mb-0">
+    Перед видаленням система перевіряє, чи не використовується країна в готелях або турах.
+  </p>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h2 class="h5">Країна: @Model.Country.Name</h2>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Country.Description)) {
+      <p class="text-muted">@Model.Country.Description</p>
+    }
+
+    <div class="mb-3">
+      <div>Пов’язані готелі: <strong>@Model.HotelsCount</strong></div>
+      <div>Пов’язані тури: <strong>@Model.ToursCount</strong></div>
+    </div>
+
+    @if (!Model.CanDelete) {
+      <div class="alert alert-warning">
+        Цю країну не можна видалити, оскільки вона вже використовується у пов’язаних записах.
+        Спочатку потрібно змінити або видалити відповідні готелі та тури.
+      </div>
+
+      <a asp-page="Index" class="btn btn-outline-secondary">
+        Повернутися до списку
+      </a>
+    } else {
+      <div class="alert alert-danger">
+        Ви справді хочете видалити цю країну? Цю дію неможливо скасувати.
+      </div>
+
+      <form method="post">
+        <input type="hidden" name="id" value="@Model.Country.Id" />
+
+        <button type="submit" class="btn btn-danger">
+          Видалити
+        </button>
+
+        <a asp-page="Index" class="btn btn-outline-secondary">
+          Скасувати
+        </a>
+      </form>
+    }
+  </div>
+</div>

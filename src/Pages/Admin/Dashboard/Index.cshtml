@@ -1,0 +1,164 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.Admin.Dashboard.IndexModel
+
+@{
+  ViewData["Title"] = "Адміністративний дашборд";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Адміністративний дашборд</h1>
+  <p class="text-muted mb-0">
+    Панель контролю основних показників веб-платформи, користувачів, туристичних пропозицій,
+    бронювань, відгуків і стану рекомендаційної моделі.
+  </p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Усього користувачів</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.TotalUsers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Активні користувачі</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.ActiveUsers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Заблоковані користувачі</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.BlockedUsers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Усього турів</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.TotalTours</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Активні тури</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.ActiveTours</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Деактивовані тури</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.InactiveTours</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Країни</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.TotalCountries</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Готелі</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.TotalHotels</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Бронювання</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.TotalBookings</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Відгуки</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.TotalReviews</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Оцінки для ML.NET</div>
+        <div class="display-6 fw-semibold">@Model.Dashboard.RatingsForTraining</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Стан рекомендаційної моделі</h2>
+      </div>
+      <div class="card-body">
+        @if (Model.Dashboard.LastTrainingDate == null) {
+          <div class="alert alert-warning mb-0">
+            Рекомендаційна модель ще не навчалася. Після накопичення оцінок адміністратор зможе
+            запустити навчання ML.NET-моделі.
+          </div>
+        } else {
+          <dl class="row mb-0">
+            <dt class="col-sm-5">Дата останнього навчання</dt>
+            <dd class="col-sm-7">@Model.Dashboard.LastTrainingDate?.ToString("dd.MM.yyyy HH:mm")</dd>
+
+            <dt class="col-sm-5">Статус</dt>
+            <dd class="col-sm-7">@Model.Dashboard.LastTrainingStatus</dd>
+
+            <dt class="col-sm-5">RMSE</dt>
+            <dd class="col-sm-7">@Model.Dashboard.LastRmse?.ToString("F4")</dd>
+
+            <dt class="col-sm-5">MAE</dt>
+            <dd class="col-sm-7">@Model.Dashboard.LastMae?.ToString("F4")</dd>
+          </dl>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Швидкі дії</h2>
+      </div>
+      <div class="card-body d-grid gap-2">
+        <a class="btn btn-primary" asp-page="/Admin/Tours/Create">Додати новий тур</a>
+        <a class="btn btn-outline-primary" asp-page="/Admin/Users/Index">Керування користувачами</a>
+        <a class="btn btn-outline-primary" asp-page="/Admin/Countries/Index">Керування країнами</a>
+        <a class="btn btn-outline-primary" asp-page="/Admin/Hotels/Index">Керування готелями</a>
+        <a class="btn btn-outline-primary" asp-page="/Admin/Bookings/Index">Перегляд бронювань</a>
+        <a class="btn btn-outline-primary" asp-page="/Admin/Reviews/Index">Перегляд відгуків</a>
+        <a class="btn btn-outline-success" asp-page="/Admin/ModelTraining/Index">Навчання ML.NET-моделі</a>
+      </div>
+    </div>
+  </div>
+</div>

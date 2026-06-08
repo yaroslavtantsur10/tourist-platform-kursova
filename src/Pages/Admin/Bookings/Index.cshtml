@@ -1,0 +1,139 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.Admin.Bookings.IndexModel
+
+@{
+  ViewData["Title"] = "Перегляд бронювань";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Перегляд бронювань</h1>
+  <p class="text-muted mb-0">
+    Адміністратор може переглядати бронювання користувачів та змінювати їхній статус.
+  </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage)) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    @Model.SuccessMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    @Model.ErrorMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h2 class="h5 mb-0">Усі бронювання</h2>
+    <span class="badge bg-primary">Кількість: @Model.Bookings.Count</span>
+  </div>
+
+  <div class="card-body p-0">
+    @if (!Model.Bookings.Any()) {
+      <div class="p-4 text-muted">
+        Бронювання ще не створені.
+      </div>
+    } else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Користувач</th>
+              <th>Тур</th>
+              <th>Країна</th>
+              <th>Готель</th>
+              <th>Дата туру</th>
+              <th>Дата бронювання</th>
+              <th>Статус</th>
+              <th class="text-end">Дії</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var booking in Model.Bookings) {
+              var tour = booking.Tour;
+
+              <tr>
+                <td>
+                  <div class="fw-semibold">
+                    @(booking.User?.FullName ?? "Ім’я не вказано")
+                  </div>
+                  <div class="small text-muted">
+                    @(booking.User?.Email ?? "Email не вказано")
+                  </div>
+                </td>
+
+                <td>
+                  @if (tour != null) {
+                    <div class="fw-semibold">@tour.Title</div>
+                    <div class="small text-muted">@tour.Price.ToString("N2") грн</div>
+                  } else {
+                    <span class="text-muted">Тур не знайдено</span>
+                  }
+                </td>
+
+                <td>@(tour?.Country?.Name ?? "Не вказано")</td>
+
+                <td>@(tour?.Hotel?.Name ?? "Не вказано")</td>
+
+                <td>
+                  @if (tour != null) {
+                    <div>@tour.StartDate.ToString("dd.MM.yyyy")</div>
+                    <div class="small text-muted">@tour.EndDate.ToString("dd.MM.yyyy")</div>
+                  } else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+
+                <td>@booking.BookingDate.ToString("dd.MM.yyyy HH:mm")</td>
+
+                <td>
+                  @if (booking.Status == BookingStatuses.Pending) {
+                    <span class="badge bg-warning text-dark">@booking.Status</span>
+                  } else if (booking.Status == BookingStatuses.Confirmed) {
+                    <span class="badge bg-success">@booking.Status</span>
+                  } else {
+                    <span class="badge bg-secondary">@booking.Status</span>
+                  }
+                </td>
+
+                <td class="text-end">
+                  @if (booking.Status != BookingStatuses.Canceled) {
+                    @if (booking.Status != BookingStatuses.Confirmed) {
+                      <form method="post" asp-page-handler="Confirm" asp-route-id="@booking.Id" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-success">
+                          Підтвердити
+                        </button>
+                      </form>
+                    }
+
+                    @if (booking.Status != BookingStatuses.Pending) {
+                      <form method="post" asp-page-handler="Pending" asp-route-id="@booking.Id" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                          Очікує
+                        </button>
+                      </form>
+                    }
+
+                    <form method="post" asp-page-handler="Cancel" asp-route-id="@booking.Id" class="d-inline">
+                      <button type="submit"
+                              class="btn btn-sm btn-outline-danger"
+                              onclick="return confirm('Скасувати це бронювання?');">
+                        Скасувати
+                      </button>
+                    </form>
+                  } else {
+                    <span class="text-muted small">Дії недоступні</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

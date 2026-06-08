@@ -1,0 +1,126 @@
+﻿@page
+@model TourRecommenderPlatform.Pages.Favorites.IndexModel
+
+@{
+  ViewData["Title"] = "Улюблені тури";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Улюблені тури</h1>
+  <p class="text-muted mb-0">
+    На цій сторінці відображаються туристичні путівки, які ви додали до персонального списку улюблених.
+  </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage)) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    @Model.SuccessMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    @Model.ErrorMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрити"></button>
+  </div>
+}
+
+@if (!Model.FavoriteTours.Any()) {
+  <div class="alert alert-info">
+    Ви ще не додали жодного туру до улюблених.
+    <a asp-page="/Tours/Index" class="alert-link">Перейти до каталогу турів</a>.
+  </div>
+} else {
+  <div class="row g-4">
+    @foreach (var favorite in Model.FavoriteTours) {
+      var tour = favorite.Tour;
+
+      if (tour == null) {
+        continue;
+      }
+
+      var averageRating = tour.Reviews.Any()
+      ? tour.Reviews.Average(r => r.Rating)
+      : 0;
+
+      <div class="col-md-6 col-xl-4">
+        <div class="card h-100 border-0 shadow-sm">
+          @if (!string.IsNullOrWhiteSpace(tour.PhotoPath)) {
+            <img src="@tour.PhotoPath"
+                 class="card-img-top"
+                 alt="@tour.Title"
+                 style="height: 210px; object-fit: cover;" />
+          } else {
+            <div class="bg-light d-flex align-items-center justify-content-center"
+                 style="height: 210px;">
+              <span class="text-muted">Фото туру відсутнє</span>
+            </div>
+          }
+
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between gap-2 mb-2">
+              <h2 class="h5 mb-0">@tour.Title</h2>
+
+              @if (tour.IsActive) {
+                <span class="badge bg-success align-self-start">Активний</span>
+              } else {
+                <span class="badge bg-secondary align-self-start">Неактивний</span>
+              }
+          </div>
+
+          <div class="text-muted small mb-2">
+            @(tour.Country?.Name ?? "Країна не вказана") ·
+            @(tour.Hotel?.Name ?? "Готель не вказаний") ·
+            @(tour.Hotel?.Rating.ToString() ?? "-")★
+          </div>
+
+          <p class="card-text">
+            @(tour.Description.Length > 130
+                      ? tour.Description.Substring(0, 130) + "..."
+                      : tour.Description)
+        </p>
+
+            <div class="small text-muted mb-3">
+              <div>Ціна: <strong>@tour.Price.ToString("N2") грн</strong></div>
+              <div>
+                Період:
+                @tour.StartDate.ToString("dd.MM.yyyy") —
+                @tour.EndDate.ToString("dd.MM.yyyy")
+              </div>
+              <div>Доступні місця: @tour.AvailablePlaces</div>
+              <div>
+                Середня оцінка:
+                @(averageRating > 0 ? averageRating.ToString("F1") : "ще немає")
+              </div>
+              <div>
+                Додано до улюблених:
+                @favorite.AddedAt.ToString("dd.MM.yyyy HH:mm")
+              </div>
+            </div>
+
+            <div class="mt-auto d-flex gap-2">
+          @if (tour.IsActive) {
+                <a asp-page="/Tours/Details" asp-route-id="@tour.Id" class="btn btn-outline-primary w-100">
+                  Детальніше
+                </a>
+              } else {
+                <button type="button" class="btn btn-outline-secondary w-100" disabled>
+                  Тур неактивний
+                </button>
+              }
+
+              <form method="post" asp-page-handler="Remove" asp-route-id="@favorite.Id">
+                <button type="submit"
+                        class="btn btn-outline-danger"
+                        onclick="return confirm('Видалити цей тур з улюблених?');">
+                  ✕
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

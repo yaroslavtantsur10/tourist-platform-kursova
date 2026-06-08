@@ -1,0 +1,61 @@
+﻿@page "{id:int}"
+@model TourRecommenderPlatform.Pages.Admin.Hotels.DeleteModel
+
+@{
+  ViewData["Title"] = "Видалення готелю";
+}
+
+<div class="mb-4">
+  <h1 class="mb-1">Видалення готелю</h1>
+  <p class="text-muted mb-0">
+    Перед видаленням система перевіряє, чи не використовується готель у туристичних путівках.
+  </p>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h2 class="h5">Готель: @Model.Hotel.Name</h2>
+
+    <dl class="row">
+      <dt class="col-sm-3">Країна</dt>
+      <dd class="col-sm-9">@(Model.Hotel.Country?.Name ?? "Не вказано")</dd>
+
+      <dt class="col-sm-3">Рейтинг</dt>
+      <dd class="col-sm-9">@Model.Hotel.Rating ★</dd>
+
+      <dt class="col-sm-3">Пов’язані тури</dt>
+      <dd class="col-sm-9">@Model.ToursCount</dd>
+    </dl>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Hotel.Description)) {
+      <p class="text-muted">@Model.Hotel.Description</p>
+    }
+
+    @if (!Model.CanDelete) {
+      <div class="alert alert-warning">
+        Цей готель не можна видалити, оскільки він уже використовується в одному або декількох турах.
+        Спочатку потрібно змінити відповідні туристичні путівки.
+      </div>
+
+      <a asp-page="Index" class="btn btn-outline-secondary">
+        Повернутися до списку
+      </a>
+    } else {
+      <div class="alert alert-danger">
+        Ви справді хочете видалити цей готель? Цю дію неможливо скасувати.
+      </div>
+
+      <form method="post">
+        <input type="hidden" name="id" value="@Model.Hotel.Id" />
+
+        <button type="submit" class="btn btn-danger">
+          Видалити
+        </button>
+
+        <a asp-page="Index" class="btn btn-outline-secondary">
+          Скасувати
+        </a>
+      </form>
+    }
+  </div>
+</div>
